@@ -3,6 +3,7 @@ const cors = require('cors')
 const app = express()
 const port = 8000
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId ; 
 
 // express middleware
 app.use(cors())
@@ -28,17 +29,44 @@ async function run() {
     try {
         await client.connect();
         const database = client.db("foodMaster");
-        const users = database.collection("users");
+        const usersCollection = database.collection("users");
 
-       // POST API
+        // GET API
+
+        app.get('/users' , async(req,res) =>{
+
+            const cursor = usersCollection.find({})
+            const users = await cursor.toArray();
+            res.send(users);
+        })
+
+
+        // POST API
 
        app.post('/users' , async(req,res)=>{
            const newUser = req.body 
-           const result = await users.insertOne(newUser)
+           const result = await usersCollection.insertOne(newUser)
            console.log('got new user' , newUser)
            console.log('a new user has been inserted' , result)
            res.json(result)
        }) 
+
+       // DELETE API
+
+       app.delete( '/users/:id' , async(req,res) =>{
+
+            const id = req.params.id
+            console.log('deleting user with id' , id)
+            const query = {_id:ObjectId(id)}
+            const result = await usersCollection.deleteOne(query)
+            console.log('deleting user ' , result)
+            res.json(result)
+
+       })
+
+    
+
+
     } 
     
     finally {
