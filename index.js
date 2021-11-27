@@ -32,6 +32,7 @@ async function run() {
         const usersCollection = database.collection("users");
 
         // GET API
+        // this is a request from Users.js  to show the all users 
 
         app.get('/users' , async(req,res) =>{
 
@@ -40,9 +41,44 @@ async function run() {
             res.send(users);
         })
 
+         // GET API ( Finding the specific user by id for updating )
+         // it is a request from UpdateUser.js to find the specific user by id
+
+         app.get('/users/:id', async(req,res)=>{
+
+            const id = req.params.id  
+            console.log(' load user with id' , id)
+            const query = {_id:ObjectId(id)}
+            const result = await usersCollection.findOne(query)
+            console.log('searched user info ' , result)
+            res.send(result)
+        })
+
+        // PUT or PATCH or UPDATE API
+        // this is a request from UpdateUser.js to update
+
+        app.put('/users/:id' , async(req,res)=>{
+            const id = req.params.id
+            console.log('updating the user' , id)
+            const updatedUser = req.body
+            const filter = {_id:ObjectId(id)}
+            const options = {upsert:true}
+            const updateDoc = {
+                $set: {
+                    name: updatedUser.name ,
+                    email: updatedUser.email
+                }
+            }
+            const result = await usersCollection.updateOne(filter , updateDoc , options)
+            
+            res.json(result)
+        })
+
+
+
 
         // POST API
-
+        // this is a request from AddUser.js to add a new user 
        app.post('/users' , async(req,res)=>{
            const newUser = req.body 
            const result = await usersCollection.insertOne(newUser)
@@ -52,6 +88,7 @@ async function run() {
        }) 
 
        // DELETE API
+       // this is a request from Users.js to delete a specific user by id
 
        app.delete( '/users/:id' , async(req,res) =>{
 
